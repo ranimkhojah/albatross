@@ -3,11 +3,12 @@ import _thread
 import time
 import cv2
 
-host = "donkeycar"
+host = "albatross"
 port = 8887
 
 socket_address = f"ws://{host}:{port}/wsDrive"
 video_address = f"http://{host}:{port}/video"
+
 
 def on_message(ws, message):
     print(message)
