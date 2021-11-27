@@ -13,15 +13,18 @@ video_address = f"http://{host}:{port}/video"
 
 
 def on_message(ws, message):
-    print(message)
+    # print(message)
+    pass
 
 
 def on_error(ws, error):
-    print(error)
+    pass
+    # print(error)
 
 
 def on_close(ws, close_status_code, close_msg):
-    print("### closed ###")
+    # print("### closed ###")
+    pass
 
 
 def on_open(ws):
@@ -40,9 +43,10 @@ def on_open(ws):
             low_b = np.uint8([5,5,5])
             high_b = np.uint8([0,0,0])
             mask = cv2.inRange(frame, high_b, low_b)
-            print(cv2.findContours(mask, 1, cv2.CHAIN_APPROX_NONE))
-            # contours, hierarchy = cv2.findContours(mask, 1, cv2.CHAIN_APPROX_NONE)
+            # print(cv2.findContours(mask, 1, cv2.CHAIN_APPROX_NONE))
             
+            _, contours, hierarchy = cv2.findContours(mask, 1, cv2.CHAIN_APPROX_NONE)
+
             if len(contours) > 0 :
                 c = max(contours, key=cv2.contourArea)
                 M = cv2.moments(c)
@@ -50,13 +54,26 @@ def on_open(ws):
                     cx = int(M['m10']/M['m00'])
                     cy = int(M['m01']/M['m00'])
                     print("CX : "+str(cx)+"  CY : "+str(cy))
-                
-            angle = 0.0
-            throttle = 0.2
+                    if cx > 140 and cx <= 155:
+                        print("Turn Right")
+                        angle = 1.0
+                        throttle = 0.2
+                    elif cx > 130 and cx <= 140 :
+                        print("On Track!")
+                        angle = 0.0
+                        throttle = 0.2
+                    elif cx > 45 and cx <= 130 :
+                        print("Turn Left")
+                        angle = -1.0
+                        throttle = 0.2
+                    cv2.circle(frame, (cx,cy), 5, (255,255,255), -1)
+            else:
+                angle = 0.0
+                throttle = 0.2
 
             message = f"{{\"angle\":{angle},\"throttle\":{throttle},\"drive_mode\":\"user\",\"recording\":false}}"
             ws.send(message)
-            print(message)
+            # print(message)
 
     _thread.start_new_thread(run, ())
 
