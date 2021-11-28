@@ -5,6 +5,7 @@ import cv2
 import math
 import numpy as np
 
+# Connection to Albatross (Donkey Car)
 host = "albatross"
 port = 8887
 
@@ -91,12 +92,12 @@ def make_points(frame, line):
     y1 = height  # bottom of the frame
     y2 = int(y1 * 1 / 2)  # make points from middle of the frame down
 
-    try:
+    try: # prevent crash when slope == 0 
         # bound the coordinates within the frame
         x1 = max(-width, min(2 * width, int((y1 - intercept) / slope)))
         x2 = max(-width, min(2 * width, int((y2 - intercept) / slope)))
         return [[x1, y1, x2, y2]]
-    except:
+    except: # deafault value
         return [[0, y1, 0, y2]]
 
 
@@ -195,7 +196,7 @@ def compute_steering_angle(frame, lane_lines):
     return steering_angle
 
 
-def convertAngle(number, cx, cy):
+def convertAngle(number, cx, cy): # noramlize the angle
     if number < 52:
         return -1
     elif number >= 52 and number <= 65:
@@ -210,7 +211,10 @@ def convertAngle(number, cx, cy):
         return 1.0
 
 
-def exteramethodforAngle(cx, cy):
+def exteramethodforAngle(cx, cy): 
+    """ helper function that uses coordinates of the lanes 
+    to decide whether a detected line is the left or right 
+    side of the track """
     if cx > 140 and cx <= 155 or cx > 0 and cx <= 45:
         return 1
     elif cx > 45 and cx <= 130:
@@ -232,8 +236,6 @@ def on_close(ws, close_status_code, close_msg):
 
 def on_open(ws):
     def run(*args):
-        # your car logic here
-
         cap = cv2.VideoCapture(video_address)
         ret, frame = cap.read()
         height = frame.shape[0]
@@ -243,8 +245,8 @@ def on_open(ws):
             ret, frame = cap.read()
             lane_lines, cropped_edges = detect_lane(frame)
             lane_lines_image = display_lines(frame, lane_lines)
-            # _________________________________________________
-            contours, hierarchy = cv2.findContours(
+            # get coordinates
+            _, contours, hierarchy = cv2.findContours(
                 cropped_edges, 1, cv2.CHAIN_APPROX_NONE)
             if len(contours) > 0:
                 c = max(contours, key=cv2.contourArea)
@@ -256,16 +258,15 @@ def on_open(ws):
 
             # cv2.imshow("lane lines", lane_lines_image)
             # cv2.waitKey(0)
-            # do something based on the frame
             _angle = compute_steering_angle(frame, lane_lines)
-            print('original number _____' + str(_angle))
+            print('Angle: ' ,_angle)
             angle = convertAngle(_angle, cx, cy)
-            print('converted:__________   ' + str(angle))
-            throttle = 0.18
+            print('Normalized Angle: ', angle)
 
+            throttle = 0.17
             message = f"{{\"angle\":{angle},\"throttle\":{throttle},\"drive_mode\":\"user\",\"recording\":false}}"
             ws.send(message)
-            # print(message)
+            print(message)
 
     _thread.start_new_thread(run, ())
 
