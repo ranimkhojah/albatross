@@ -1,16 +1,15 @@
-# Chalmers Cup in Self-driving
-
-Please change the branch to use one of our provided templates.
+# Chalmers Cup in Self-driving 2021
 
 ## Python
 
 For the Python implementation, you need to install the following packages:
 * websocket
 * cv2
+* numpy
 
 It is recommended to use a virtual environment, using conda.
 
-## Connect to your car
+## Connect to your car (Albatross)
 
 Setup up a WiFi with the following settings:
 
@@ -55,5 +54,3 @@ The message you send is in JSON format and should look like this:
 The `angle` property goes from `-1.0`, for full left, and `1.0`, for full right.
 Likewise, the `throttle` goes from `-1.0`, for full reverse, and `1.0`, for full
 forward.
-
-Don't mind, or change, the other properties.
